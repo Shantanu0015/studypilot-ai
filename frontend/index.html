@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Planner — Antigravity</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        'primary-light': '#818CF8',
+                        dark: '#0F172A',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css?v=8">
+</head>
+<body>
+    <div class="bg-gradient-shapes"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[99999] flex flex-col gap-2 pointer-events-none"></div>
+
+    <div id="app" class="flex h-screen w-full relative z-10">
+
+        <!-- ============================================ -->
+        <!-- AUTH VIEW : SPLIT SCREEN                     -->
+        <!-- ============================================ -->
+        <div id="auth-view" class="absolute inset-0 z-50 flex animate-fade" style="background:rgba(5,7,15,0.98)">
+            
+            <div class="hidden lg:flex w-1/2 auth-left-panel flex-col justify-center items-center p-12 relative overflow-hidden">
+                <div class="max-w-md w-full stagger-container">
+                    <div class="text-center mb-10">
+                        <div class="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-indigo-100 mb-6 bg-gradient-to-br from-indigo-400 to-primary transform hover:scale-105 transition-transform duration-300">
+                            <i class="fa-solid fa-brain text-white text-3xl"></i>
+                        </div>
+                        <h1 class="text-4xl font-black text-gray-900 tracking-tight mb-4">AI Study Planner</h1>
+                        <p class="text-gray-500 font-medium leading-relaxed">
+                            Your intelligent study companion — personalised schedules, focus tracking, and deep analytics.
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="feature-card">
+                            <div class="icon-box icon-box-1 text-indigo-500"><i class="fa-solid fa-robot"></i></div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-sm mb-0.5">AI-Powered Scheduling</h3>
+                                <p class="text-xs text-gray-500 font-medium">Balances subjects by difficulty</p>
+                            </div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-box icon-box-2 text-fuchsia-500"><i class="fa-solid fa-stopwatch"></i></div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-sm mb-0.5">Focus Timer</h3>
+                                <p class="text-xs text-gray-500 font-medium">Pomodoro technique tracking</p>
+                            </div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="icon-box icon-box-3 text-emerald-500"><i class="fa-solid fa-chart-simple"></i></div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-sm mb-0.5">Real Analytics</h3>
+                                <p class="text-xs text-gray-500 font-medium">Visualise your study habits</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full lg:w-1/2 auth-right-panel flex flex-col items-center justify-center p-8 relative">
+                <div class="w-full max-w-sm animate-fade">
+                    <div class="pill-toggle-container mb-12" id="auth-toggle">
+                        <div class="pill-bg" id="pill-bg"></div>
+                        <button class="pill-btn" id="btn-login-tab" onclick="toggleAuth('login')">Sign In</button>
+                        <button class="pill-btn active" id="btn-reg-tab" onclick="toggleAuth('register')">Sign Up</button>
+                    </div>
+
+                    <div id="register-container">
+                        <h2 class="text-3xl font-black text-gray-900 tracking-tight mb-2">Create account</h2>
+                        <p class="text-gray-500 text-sm font-medium mb-8">Start your AI-powered study journey</p>
+                        <form id="register-form" class="space-y-4">
+                            <div><label class="input-label">Username</label><input type="text" id="reg-name" class="input-field" placeholder="John Doe" required></div>
+                            <div><label class="input-label">Email</label><input type="email" id="reg-email" class="input-field" placeholder="john@example.com" required></div>
+                            <div><label class="input-label">Password</label><input type="password" id="reg-password" class="input-field" placeholder="••••••••" required></div>
+                            <button type="submit" class="w-full btn-primary py-3.5 mt-2">Create Account</button>
+                        </form>
+                    </div>
+
+                    <div id="login-container" class="hidden">
+                        <h2 class="text-3xl font-black text-gray-900 tracking-tight mb-2">Welcome back</h2>
+                        <p class="text-gray-500 text-sm font-medium mb-8">Resume your AI-powered study journey</p>
+                        <form id="login-form" class="space-y-4">
+                            <div><label class="input-label">Email</label><input type="email" id="login-email" class="input-field" placeholder="john@example.com" required></div>
+                            <div><label class="input-label">Password</label><input type="password" id="login-password" class="input-field" placeholder="••••••••" required></div>
+                            <button type="submit" class="w-full btn-primary py-3.5 mt-2">Continue to Dashboard</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- POST-LOGIN SIDEBAR NAVIGATION               -->
+        <!-- ============================================ -->
+        <nav id="sidebar" class="w-[240px] glass-sidebar hidden flex-col h-full py-8 px-4 z-40 relative md:flex md:flex-col fixed md:static top-0 left-0 bottom-0 transition-transform duration-300">
+            <div class="flex items-center justify-between px-4 mb-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-100 bg-primary-gradient">
+                        <i class="fa-solid fa-brain text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-base font-black text-gray-900 tracking-tight">AI Planner</h2>
+                </div>
+                <button onclick="closeSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="px-4 mb-3">
+                <span class="text-[10px] font-bold tracking-widest text-[#94A3B8] uppercase">Menu</span>
+            </div>
+            <ul class="space-y-1 flex-grow">
+                <li><a href="#" onclick="showPage('dashboard')" class="nav-link active flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-solid fa-house w-5 text-center opacity-70 text-sm"></i> Dashboard</a></li>
+                <li><a href="#" onclick="showPage('planner')" class="nav-link flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-solid fa-wand-magic-sparkles w-5 text-center opacity-70 text-sm"></i> AI Schedule</a></li>
+                <li><a href="#" onclick="showPage('tasks')" class="nav-link flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-regular fa-square-check w-5 text-center opacity-70 text-sm"></i> Task Manager</a></li>
+                <li><a href="#" onclick="showPage('pomodoro')" class="nav-link flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-regular fa-clock w-5 text-center opacity-70 text-sm"></i> Focus Timer</a></li>
+                <li><a href="#" onclick="showPage('analytics')" class="nav-link flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-solid fa-chart-pie w-5 text-center opacity-70 text-sm"></i> Analytics</a></li>
+                <li><a href="#" onclick="showPage('exams')" class="nav-link flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-solid fa-graduation-cap w-5 text-center opacity-70 text-sm"></i> Exams</a></li>
+                <li><a href="#" onclick="showPage('revision')" class="nav-link flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-solid fa-book-open-reader w-5 text-center opacity-70 text-sm"></i> Revision</a></li>
+                <li><a href="#" onclick="showPage('notes')" class="nav-link flex items-center gap-3 px-4 py-2.5 font-semibold text-sm"><i class="fa-solid fa-note-sticky w-5 text-center opacity-70 text-sm"></i> Notes</a></li>
+            </ul>
+            
+            <div class="mt-auto px-4 pt-4 border-t border-[rgba(226,232,240,0.5)] space-y-1">
+                <div class="flex items-center gap-3 py-2 text-[#64748B] hover:text-gray-900 transition-colors cursor-pointer font-semibold text-sm" onclick="showPage('profile')">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Settings</span>
+                </div>
+                <div class="flex items-center gap-3 py-2 text-[#64748B] hover:text-red-500 transition-colors cursor-pointer font-semibold text-sm" onclick="logout()">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Log out</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar overlay for mobile -->
+        <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/40 z-30 md:hidden" onclick="closeSidebar()"></div>
+
+        <!-- ============================================ -->
+        <!-- POST-LOGIN MAIN CONTENT AREA                -->
+        <!-- ============================================ -->
+        <main id="main-content" class="flex-1 h-full overflow-y-auto hidden">
+            <!-- Mobile top bar -->
+            <div class="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-[rgba(226,232,240,0.6)] sticky top-0 z-20" id="mobile-topbar">
+                <button onclick="openSidebar()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F1F5F9] text-gray-700">
+                    <i class="fa-solid fa-bars text-sm"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+                        <i class="fa-solid fa-brain text-white text-xs"></i>
+                    </div>
+                    <span class="font-black text-gray-900 text-sm">AI Planner</span>
+                </div>
+                <button onclick="toggleAIChat()" class="w-9 h-9 flex items-center justify-center rounded-xl text-white" style="background:linear-gradient(135deg,#4F46E5,#7C3AED)">
+                    <i class="fa-solid fa-robot text-sm"></i>
+                </button>
+            </div>
+            <div class="max-w-6xl mx-auto px-4 md:px-10 py-6 md:py-10 relative z-10 pb-24 md:pb-10">
+
+                <!-- ============ DASHBOARD ============ -->
+                <section id="page-dashboard" class="page-section hidden animate-fade">
+                    <header class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8 border-b border-[rgba(226,232,240,0.5)] pb-6 stagger-container">
+                        <div>
+                            <h2 class="text-[24px] md:text-[28px] font-black text-gray-900 tracking-tight">Good day, <span id="user-name-display" class="text-primary">Creator</span></h2>
+                            <p class="text-[#64748B] mt-1 text-sm font-medium">Here's your productivity overview for today.</p>
+                        </div>
+                        <!-- Quick Add Task -->
+                        <form id="quick-task-form" class="flex gap-2 items-center">
+                            <input type="text" id="quick-task-input" class="input-field py-2 text-sm w-full md:w-52" placeholder="Add a quick task…">
+                            <button type="submit" class="btn-primary px-4 py-2 text-sm shadow-md whitespace-nowrap"><i class="fa-solid fa-plus text-xs mr-1"></i>Add</button>
+                        </form>
+                    </header>
+
+                    <!-- Stats Row : 4 cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 stagger-container">
+                        <div class="glass-card p-5">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="stat-label">Focus Time</span>
+                                <div class="w-7 h-7 rounded-md bg-indigo-50 flex items-center justify-center text-primary"><i class="fa-solid fa-clock text-xs"></i></div>
+                            </div>
+                            <h3 class="stat-value"><span id="dash-focus-time">0</span><span class="text-xl text-[#94A3B8] ml-1 font-semibold">m</span></h3>
+                        </div>
+                        <div class="glass-card p-5">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="stat-label">Completed</span>
+                                <div class="w-7 h-7 rounded-md bg-emerald-50 flex items-center justify-center text-emerald-500"><i class="fa-solid fa-check text-xs"></i></div>
+                            </div>
+                            <h3 class="stat-value" id="dash-completed-tasks">0</h3>
+                        </div>
+                        <div class="glass-card p-5 flex flex-col justify-between">
+                            <span class="stat-label mb-3">Completion</span>
+                            <div>
+                                <h3 class="stat-value text-primary mb-2" id="dash-rate">0%</h3>
+                                <div class="progress-bg"><div class="progress-fill shadow-sm" id="dash-progress-line" style="width: 0%"></div></div>
+                            </div>
+                        </div>
+                        <div class="glass-card p-5">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="stat-label">Study Streak</span>
+                                <span class="text-lg">🔥</span>
+                            </div>
+                            <h3 class="stat-value"><span id="dash-streak">0</span><span class="text-base text-[#94A3B8] ml-1 font-semibold">days</span></h3>
+                        </div>
+                    </div>
+
+                    <!-- 7-Day Habit Grid -->
+                    <div class="glass-card p-5 mb-6 stagger-container">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2"><i class="fa-solid fa-calendar-days text-primary text-xs"></i> 7-Day Activity</h3>
+                            <span class="text-xs text-[#94A3B8] font-medium">darker = more focus time</span>
+                        </div>
+                        <div id="habit-grid" class="flex gap-2 justify-between"></div>
+                    </div>
+
+                    <!-- Exam Countdown -->
+                    <div id="exam-countdown-row" class="mb-6 hidden stagger-container">
+                        <h3 class="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-graduation-cap text-primary text-xs"></i> Upcoming Exams</h3>
+                        <div id="exam-countdown-cards" class="flex gap-3 flex-wrap"></div>
+                    </div>
+
+                    <!-- Today's Schedule + Recent Tasks -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 stagger-container">
+                        <div class="glass-card flex flex-col h-[360px]">
+                            <div class="glass-card-header px-6 py-4 flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-primary shrink-0"><i class="fa-solid fa-list-ul text-[10px]"></i></div>
+                                <h3 class="font-bold text-gray-900 text-sm">Today's Schedule</h3>
+                            </div>
+                            <div id="dash-plan-list" class="flex-1 overflow-y-auto space-y-2 p-5"></div>
+                        </div>
+                        
+                        <div class="glass-card flex flex-col h-[360px]">
+                            <div class="glass-card-header px-6 py-4 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-primary shrink-0"><i class="fa-solid fa-check-double text-[10px]"></i></div>
+                                    <h3 class="font-bold text-gray-900 text-sm">Recent Tasks</h3>
+                                </div>
+                                <a href="#" onclick="showPage('tasks')" class="text-xs font-bold text-primary hover:text-indigo-700">View all</a>
+                            </div>
+                            <div id="dash-task-list" class="flex-1 overflow-y-auto space-y-2 p-5"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============ AI PLANNER ============ -->
+                <section id="page-planner" class="page-section hidden animate-fade max-w-3xl mx-auto">
+                    <header class="mb-10 text-center stagger-container">
+                        <div class="w-14 h-14 rounded-2xl bg-white shadow-xl shadow-indigo-100 mx-auto flex items-center justify-center mb-5 border border-[rgba(226,232,240,0.8)] transform hover:rotate-3 transition-transform">
+                            <i class="fa-solid fa-wand-magic-sparkles text-primary text-xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-black text-gray-900 tracking-tight">AI Planner</h2>
+                        <p class="text-[#64748B] mt-2 text-sm font-medium">Add subjects and let AI perfectly distribute your time.</p>
+                    </header>
+
+                    <!-- Saved Plans Recall -->
+                    <div id="saved-plans-section" class="glass-card p-5 mb-6 stagger-container hidden">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2"><i class="fa-solid fa-floppy-disk text-primary text-xs"></i> Saved Plans</h3>
+                        </div>
+                        <div id="saved-plans-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    
+                    <div class="glass-card p-8 mb-8 stagger-container shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[rgba(226,232,240,0.8)]">
+                        <form id="planner-form" class="space-y-6">
+                            <div class="bg-[#F8FAFC] p-5 rounded-xl border border-[rgba(226,232,240,0.8)]">
+                                <label class="stat-label block mb-3 text-gray-600">Available Focus Hours</label>
+                                <div class="flex items-center gap-4">
+                                    <input type="number" id="plan-hours" min="1" max="24" class="input-field max-w-[180px] bg-white text-lg font-bold" placeholder="e.g. 4" required>
+                                    <span class="text-xs text-[#64748B] font-medium">Hours dedicated to study today</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="stat-label block mb-3 text-gray-600">Subjects to Study</label>
+                                <div id="subjects-container" class="space-y-3">
+                                    <div class="subject-row flex gap-3 items-center bg-white p-2.5 rounded-xl border border-[rgba(226,232,240,0.8)] shadow-sm animate-fade hover:-translate-y-0.5 transition-transform">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-primary shrink-0"><i class="fa-solid fa-book text-xs"></i></div>
+                                        <input type="text" placeholder="Subject Name" class="subject-name flex-1 bg-transparent text-gray-900 text-sm font-semibold outline-none h-full" required>
+                                        <select class="subject-difficulty bg-transparent text-xs font-bold text-primary focus:outline-none cursor-pointer border-l border-[rgba(226,232,240,0.8)] pl-3">
+                                            <option value="easy">Easy</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="hard">Hard</option>
+                                        </select>
+                                        <button type="button" onclick="this.closest('.subject-row').remove()" class="w-8 h-8 flex items-center justify-center text-[#94A3B8] hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors">
+                                            <i class="fa-solid fa-xmark text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="addSubjectRow()" class="mt-4 text-xs font-bold text-[#64748B] hover:text-primary transition-colors flex items-center gap-2 px-2">
+                                    <i class="fa-solid fa-circle-plus"></i> Add Subject
+                                </button>
+                            </div>
+
+                            <div class="flex justify-end pt-6 border-t border-[rgba(226,232,240,0.5)]">
+                                <button type="submit" class="btn-primary px-8 py-3 w-full md:w-auto text-sm shadow-lg shadow-indigo-200">
+                                    Generate Schedule
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div id="planner-result-container" class="hidden animate-fade mt-10">
+                        <div class="flex items-center justify-between mb-6 px-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-1.5 h-5 bg-primary rounded-full"></div>
+                                <h3 class="text-lg font-black text-gray-900 tracking-tight">Optimized Execution Plan</h3>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="exportPlanPDF()" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-500 border border-red-100 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">
+                                    <i class="fa-solid fa-file-pdf"></i> Export PDF
+                                </button>
+                                <button id="save-plan-btn" onclick="savePlan()" class="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Plan
+                                </button>
+                            </div>
+                        </div>
+                        <div id="planner-results" class="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-container"></div>
+                    </div>
+                </section>
+
+                <!-- ============ TASKS ============ -->
+                <section id="page-tasks" class="page-section hidden animate-fade max-w-5xl mx-auto">
+                    <header class="mb-8 stagger-container border-b border-[rgba(226,232,240,0.5)] pb-6">
+                        <h2 class="text-[28px] font-black text-gray-900 tracking-tight">Your Tasks</h2>
+                        <p class="text-[#64748B] mt-1 text-sm font-medium">Track tasks with deadlines and priorities.</p>
+                    </header>
+
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-[290px] shrink-0 stagger-container relative z-10">
+                            <div class="glass-card p-6 sticky top-8">
+                                <form id="task-form" class="space-y-4">
+                                    <label class="stat-label">Add New Task</label>
+                                    <input type="text" id="task-title" class="input-field" placeholder="What needs to be done?" required>
+                                    
+                                    <div>
+                                        <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Deadline</label>
+                                        <input type="date" id="task-deadline" class="input-field text-sm">
+                                    </div>
+
+                                    <div>
+                                        <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Priority</label>
+                                        <select id="task-priority" class="input-field text-sm font-bold">
+                                            <option value="low">🟢 Low</option>
+                                            <option value="medium" selected>🟡 Medium</option>
+                                            <option value="high">🔴 High</option>
+                                        </select>
+                                    </div>
+
+                                    <button type="submit" class="w-full btn-primary py-2.5">Save Task</button>
+                                </form>
+                                <div class="mt-8 pt-6 border-t border-[rgba(226,232,240,0.5)]">
+                                    <label class="stat-label mb-3 block">Filters</label>
+                                    <div class="flex flex-col space-y-1.5" id="task-filters">
+                                        <button class="filter-btn active text-left px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white shadow-md hover:-translate-y-0.5 transition-all" onclick="filterTasks('all', this)">All Tasks</button>
+                                        <button class="filter-btn text-left px-4 py-2 rounded-xl text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-all" onclick="filterTasks('pending', this)">Pending</button>
+                                        <button class="filter-btn text-left px-4 py-2 rounded-xl text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-all" onclick="filterTasks('completed', this)">Completed</button>
+                                        <button class="filter-btn text-left px-4 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-50 transition-all" onclick="filterTasks('overdue', this)">⚠️ Overdue</button>
+                                        <button class="filter-btn text-left px-4 py-2 rounded-xl text-xs font-bold text-[#64748B] hover:bg-[#F1F5F9] transition-all" onclick="filterTasks('high', this)">🔴 High Priority</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 relative z-10">
+                            <div id="main-task-list" class="space-y-2 stagger-container pb-10"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============ POMODORO ============ -->
+                <section id="page-pomodoro" class="page-section hidden animate-fade flex flex-col items-center justify-center min-h-[70vh]">
+                    <div class="glass-card p-10 flex flex-col items-center relative max-w-[380px] w-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-0 text-center">
+                        <div class="mb-6 flex flex-col items-center gap-4 w-full">
+                            <span id="mode-text" class="stat-label px-4 py-1.5 bg-[#EEF2FF] text-primary rounded-full shadow-sm border border-white">Focus Session</span>
+                            
+                            <!-- Subject Selector -->
+                            <div class="w-full">
+                                <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Studying Subject (optional)</label>
+                                <input type="text" id="pomodoro-subject" class="input-field text-sm text-center" placeholder="e.g. Mathematics">
+                            </div>
+
+                            <div class="flex items-center justify-center gap-2">
+                                <input type="number" id="manual-time-input" class="input-field text-center py-1.5 px-2 w-20 font-bold bg-[#F8FAFC] border-[#E2E8F0] shadow-inner" placeholder="25" min="1" max="180" value="25" onchange="applyManualTime()">
+                                <span class="text-[10px] font-black text-[#94A3B8] uppercase tracking-widest">Minutes</span>
+                            </div>
+                        </div>
+                        <div class="relative w-56 h-56 flex items-center justify-center mb-10">
+                            <svg class="absolute inset-0 w-full h-full timer-svg" viewBox="0 0 100 100">
+                                <defs>
+                                    <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#818CF8" />
+                                        <stop offset="100%" stop-color="#4F46E5" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="timer-circle-bg" cx="50" cy="50" r="46"></circle>
+                                <circle class="timer-circle-progress" cx="50" cy="50" r="46" stroke-dasharray="289" stroke-dashoffset="0" id="timer-ring-path"></circle>
+                            </svg>
+                            <div id="time-display" class="text-5xl font-black text-gray-900 tracking-tighter tabular-nums relative z-10">25:00</div>
+                        </div>
+                        <div class="flex items-center gap-5">
+                            <button id="btn-pause" class="w-10 h-10 rounded-full bg-white border border-[#E2E8F0] text-[#64748B] flex items-center justify-center hover:bg-[#F8FAFC] hover:text-gray-900 transition-all shadow-sm active:scale-95" onclick="pausePomodoro()">
+                                <i class="fa-solid fa-pause text-xs"></i>
+                            </button>
+                            <button id="btn-start" class="w-16 h-16 rounded-full btn-primary flex items-center justify-center text-xl hover:scale-110 active:scale-95 transition-transform shadow-[0_8px_20px_rgba(79,70,229,0.3)] border-[3px] border-white" onclick="startPomodoro()">
+                                <i class="fa-solid fa-play ml-1"></i>
+                            </button>
+                            <button id="btn-reset" class="w-10 h-10 rounded-full bg-white border border-[#E2E8F0] text-[#64748B] flex items-center justify-center hover:bg-[#F8FAFC] hover:text-gray-900 transition-all shadow-sm active:scale-95" onclick="resetPomodoro()">
+                                <i class="fa-solid fa-rotate-right text-xs"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-[#94A3B8] font-medium mt-5">Press <kbd class="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px]">Space</kbd> to start / pause</p>
+                    </div>
+                </section>
+
+                <!-- ============ ANALYTICS ============ -->
+                <section id="page-analytics" class="page-section hidden animate-fade max-w-5xl mx-auto">
+                    <header class="mb-8 stagger-container border-b border-[rgba(226,232,240,0.5)] pb-6">
+                        <h2 class="text-[28px] font-black text-gray-900 tracking-tight">Focus Analytics</h2>
+                        <p class="text-[#64748B] mt-1 text-sm font-medium">Your progress visualized.</p>
+                    </header>
+
+                    <!-- Stats Row -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 stagger-container">
+                        <div class="glass-card p-5 border-b-2 border-b-primary">
+                            <span class="stat-label mb-2 block">Total Time</span>
+                            <h3 class="stat-value"><span id="stat-total-hrs">0.0</span><span class="text-base text-[#94A3B8] ml-1 font-semibold">h</span></h3>
+                        </div>
+                        <div class="glass-card p-5">
+                            <span class="stat-label mb-2 block">Tasks Logged</span>
+                            <h3 class="stat-value" id="stat-total-tasks">0</h3>
+                        </div>
+                        <div class="glass-card p-5">
+                            <span class="stat-label mb-2 block">Cleared</span>
+                            <h3 class="stat-value text-emerald-500" id="stat-completed-tasks">0</h3>
+                        </div>
+                        <div class="glass-card p-5">
+                            <span class="stat-label mb-2 block">Streak</span>
+                            <h3 class="stat-value">🔥 <span id="stat-streak">0</span></h3>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Goal -->
+                    <div class="glass-card p-6 mb-6 stagger-container">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2"><i class="fa-solid fa-bullseye text-primary text-xs"></i> Weekly Study Goal</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-[#64748B] font-medium">Goal:</span>
+                                <input type="number" id="weekly-goal-input" min="1" max="100" value="10" class="input-field w-16 text-center text-sm py-1 font-bold">
+                                <span class="text-xs text-[#64748B] font-medium">hrs/week</span>
+                                <button onclick="saveWeeklyGoal()" class="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors">Save</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <div class="flex justify-between text-xs font-bold text-[#64748B] mb-1">
+                                    <span id="weekly-progress-label">0h this week</span>
+                                    <span id="weekly-goal-label">Goal: 10h</span>
+                                </div>
+                                <div class="progress-bg h-3">
+                                    <div class="progress-fill h-full rounded-full" id="weekly-goal-bar" style="width:0%"></div>
+                                </div>
+                            </div>
+                            <div class="text-2xl font-black text-primary" id="weekly-goal-pct">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 stagger-container">
+                        <div class="glass-card flex flex-col lg:col-span-2">
+                            <div class="glass-card-header px-6 py-4 flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-primary shrink-0"><i class="fa-solid fa-chart-line text-sm"></i></div>
+                                    <h3 class="font-bold text-gray-900 text-sm">Weekly Focus Trend</h3>
+                                </div>
+                                <div class="px-3 py-1 bg-[#F8FAFC] border border-[rgba(226,232,240,0.8)] rounded-md text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Last 7 Days</div>
+                            </div>
+                            <div class="h-[260px] w-full p-6 pb-4 relative">
+                                <canvas id="focusChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="glass-card flex flex-col">
+                            <div class="glass-card-header px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-[#EEF2FF] flex items-center justify-center text-primary shrink-0"><i class="fa-solid fa-chart-pie text-sm"></i></div>
+                                    <h3 class="font-bold text-gray-900 text-sm">By Subject</h3>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center justify-center p-4">
+                                <div class="h-[180px] w-full relative">
+                                    <canvas id="subjectChart"></canvas>
+                                </div>
+                                <div id="subject-legend" class="mt-3 w-full space-y-1 text-xs"></div>
+                                <div id="subject-empty" class="text-center text-[#94A3B8] text-xs font-medium hidden">
+                                    <div class="text-3xl mb-2">📚</div>
+                                    Log a session with a subject to see breakdown
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============ EXAMS ============ -->
+                <section id="page-exams" class="page-section hidden animate-fade max-w-5xl mx-auto">
+                    <header class="mb-8 stagger-container border-b border-[rgba(226,232,240,0.5)] pb-6">
+                        <h2 class="text-[28px] font-black text-gray-900 tracking-tight">Exam Countdown</h2>
+                        <p class="text-[#64748B] mt-1 text-sm font-medium">Track your upcoming exams and never miss a date.</p>
+                    </header>
+
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-[280px] shrink-0 stagger-container">
+                            <div class="glass-card p-6 sticky top-8">
+                                <form id="exam-form" class="space-y-4">
+                                    <label class="stat-label">Add Exam</label>
+                                    <input type="text" id="exam-subject" class="input-field" placeholder="Subject name" required>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Exam Date</label>
+                                        <input type="date" id="exam-date" class="input-field text-sm" required>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Notes (optional)</label>
+                                        <textarea id="exam-notes" class="input-field text-sm resize-none h-16" placeholder="Room, topics, etc."></textarea>
+                                    </div>
+                                    <button type="submit" class="w-full btn-primary py-2.5">Add Exam</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div id="exams-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4 stagger-container pb-10"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============ REVISION ============ -->
+                <section id="page-revision" class="page-section hidden animate-fade max-w-5xl mx-auto">
+                    <header class="mb-8 stagger-container border-b border-[rgba(226,232,240,0.5)] pb-6">
+                        <h2 class="text-[28px] font-black text-gray-900 tracking-tight">Revision Tracker</h2>
+                        <p class="text-[#64748B] mt-1 text-sm font-medium">Track every topic — Not Started → Reviewing → Done.</p>
+                    </header>
+
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-[280px] shrink-0 stagger-container">
+                            <div class="glass-card p-6 sticky top-8">
+                                <form id="revision-form" class="space-y-4">
+                                    <label class="stat-label">Add Topic</label>
+                                    <input type="text" id="revision-subject" class="input-field" placeholder="Subject (e.g. Physics)">
+                                    <input type="text" id="revision-topic" class="input-field" placeholder="Topic (e.g. Kinematics)">
+                                    <button type="submit" class="w-full btn-primary py-2.5">Add Topic</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="flex-1 pb-10 stagger-container">
+                            <div id="revision-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============ NOTES ============ -->
+                <section id="page-notes" class="page-section hidden animate-fade max-w-5xl mx-auto">
+                    <header class="mb-8 stagger-container border-b border-[rgba(226,232,240,0.5)] pb-6">
+                        <h2 class="text-[28px] font-black text-gray-900 tracking-tight">Subject Notes</h2>
+                        <p class="text-[#64748B] mt-1 text-sm font-medium">Write notes per subject — auto-saved.</p>
+                    </header>
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-[260px] shrink-0">
+                            <div class="glass-card p-5 sticky top-8">
+                                <label class="stat-label mb-3 block">Your Subjects</label>
+                                <div id="notes-subject-list" class="space-y-1"></div>
+                                <div class="mt-4 pt-4 border-t border-[rgba(226,232,240,0.5)]">
+                                    <input type="text" id="new-note-subject" class="input-field text-sm" placeholder="New subject name">
+                                    <button onclick="createNoteSubject()" class="w-full btn-primary py-2 text-sm mt-2">+ Add Subject</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div id="note-editor" class="glass-card p-6 hidden">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-black text-gray-900 text-base" id="note-editor-title">Notes</h3>
+                                    <div class="flex gap-2">
+                                        <button onclick="saveNote()" class="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-colors"><i class="fa-solid fa-save mr-1"></i>Save</button>
+                                        <button onclick="deleteCurrentNote()" class="px-4 py-1.5 bg-red-50 text-red-500 text-xs font-bold rounded-xl hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash-can mr-1"></i>Delete</button>
+                                    </div>
+                                </div>
+                                <textarea id="note-textarea" class="w-full h-64 p-4 bg-[#F8FAFC] border border-[rgba(226,232,240,0.8)] rounded-xl text-sm font-medium text-gray-800 resize-none focus:outline-none focus:border-primary transition-colors" placeholder="Write your notes here…"></textarea>
+                                <p class="text-[10px] text-[#94A3B8] mt-2">Last saved: <span id="note-last-saved">Never</span></p>
+                            </div>
+                            <div id="note-empty" class="glass-card flex flex-col items-center justify-center p-16 text-center border-dashed border-2 border-[rgba(226,232,240,0.8)] shadow-none">
+                                <div class="text-4xl mb-4">📝</div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2">Select a Subject</h3>
+                                <p class="text-[#64748B] text-sm">Pick a subject on the left to start writing notes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============ PROFILE / SETTINGS ============ -->
+                <section id="page-profile" class="page-section hidden animate-fade max-w-2xl mx-auto">
+                    <header class="mb-8 stagger-container border-b border-[rgba(226,232,240,0.5)] pb-6">
+                        <h2 class="text-[28px] font-black text-gray-900 tracking-tight">Settings</h2>
+                        <p class="text-[#64748B] mt-1 text-sm font-medium">Manage your account details.</p>
+                    </header>
+                    <div class="space-y-6 stagger-container">
+                        <!-- Avatar -->
+                        <div class="glass-card p-6 flex items-center gap-5">
+                            <div id="profile-avatar" class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-400 to-primary flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-200">U</div>
+                            <div>
+                                <h3 class="font-black text-gray-900 text-lg" id="profile-name-display">Your Name</h3>
+                                <p class="text-sm text-[#64748B]" id="profile-email-display">your@email.com</p>
+                            </div>
+                        </div>
+                        <!-- Edit Profile -->
+                        <div class="glass-card p-6">
+                            <h3 class="font-bold text-gray-900 text-sm mb-5 flex items-center gap-2"><i class="fa-solid fa-user text-primary text-xs"></i> Personal Info</h3>
+                            <form id="profile-form" class="space-y-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Display Name</label>
+                                    <input type="text" id="profile-name" class="input-field" placeholder="Your name">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Email</label>
+                                    <input type="email" id="profile-email" class="input-field" placeholder="your@email.com">
+                                </div>
+                                <button type="submit" class="btn-primary px-6 py-2.5 text-sm">Save Changes</button>
+                            </form>
+                        </div>
+                        <!-- Change Password -->
+                        <div class="glass-card p-6">
+                            <h3 class="font-bold text-gray-900 text-sm mb-5 flex items-center gap-2"><i class="fa-solid fa-lock text-primary text-xs"></i> Change Password</h3>
+                            <form id="password-form" class="space-y-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">Current Password</label>
+                                    <input type="password" id="current-password" class="input-field" placeholder="••••••••">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mb-1 block">New Password</label>
+                                    <input type="password" id="new-password" class="input-field" placeholder="••••••••">
+                                </div>
+                                <button type="submit" class="btn-primary px-6 py-2.5 text-sm">Update Password</button>
+                            </form>
+                        </div>
+                        <!-- Danger zone -->
+                        <div class="glass-card p-6 border border-red-100">
+                            <h3 class="font-bold text-red-500 text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation text-xs"></i> Account</h3>
+                            <button onclick="logout()" class="px-5 py-2.5 bg-red-50 text-red-500 border border-red-200 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">
+                                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ============ ONBOARDING MODAL ============ -->
+    <div id="onboarding-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center" style="background:rgba(5,7,15,0.7);backdrop-filter:blur(8px)">
+        <div class="bg-white rounded-3xl p-10 max-w-md w-full mx-4 shadow-2xl text-center animate-fade">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-400 to-primary mx-auto flex items-center justify-center shadow-lg shadow-indigo-200 mb-6">
+                <i class="fa-solid fa-brain text-white text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight mb-2">Welcome to AI Study Planner! 🎉</h2>
+            <p class="text-[#64748B] text-sm font-medium mb-8 leading-relaxed">Here's a quick look at everything you can do:</p>
+            <div class="space-y-3 text-left mb-8">
+                <div class="flex items-center gap-3 p-3 bg-[#F8FAFC] rounded-xl"><span class="text-lg">📅</span><div><p class="font-bold text-gray-900 text-sm">Generate a Study Schedule</p><p class="text-xs text-[#64748B]">AI Planner → add subjects → Generate</p></div></div>
+                <div class="flex items-center gap-3 p-3 bg-[#F8FAFC] rounded-xl"><span class="text-lg">✅</span><div><p class="font-bold text-gray-900 text-sm">Manage Tasks with Deadlines</p><p class="text-xs text-[#64748B]">Task Manager → set priority + deadline</p></div></div>
+                <div class="flex items-center gap-3 p-3 bg-[#F8FAFC] rounded-xl"><span class="text-lg">⏱️</span><div><p class="font-bold text-gray-900 text-sm">Focus with Pomodoro Timer</p><p class="text-xs text-[#64748B]">Focus Timer → pick subject → start</p></div></div>
+                <div class="flex items-center gap-3 p-3 bg-[#F8FAFC] rounded-xl"><span class="text-lg">🔥</span><div><p class="font-bold text-gray-900 text-sm">Build your Study Streak</p><p class="text-xs text-[#64748B]">Study daily to maintain your streak</p></div></div>
+            </div>
+            <button onclick="closeOnboarding()" class="w-full btn-primary py-3.5 text-sm shadow-lg shadow-indigo-200">Let's Get Started →</button>
+        </div>
+    </div>
+    <!-- ============ AI STUDYBOT CHAT ============ -->
+
+    <!-- Floating Chat Button (desktop only) -->
+    <button id="ai-chat-btn" onclick="toggleAIChat()" class="hidden md:hidden fixed bottom-6 right-6 z-[9998] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);box-shadow:0 8px 30px rgba(79,70,229,0.45)">
+        <i class="fa-solid fa-robot text-white text-xl" id="ai-btn-icon"></i>
+        <span id="ai-unread" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-[10px] font-black flex items-center justify-center">1</span>
+    </button>
+
+    <!-- Chat Panel -->
+    <div id="ai-chat-panel" class="hidden fixed z-[9997] flex flex-col rounded-2xl overflow-hidden" style="bottom:0;right:0;left:0;top:0;width:100%;height:100%;border-radius:0;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid rgba(226,232,240,0.8)">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#4F46E5,#7C3AED);padding:16px 20px;flex-shrink:0">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                        <i class="fa-solid fa-robot text-white text-base"></i>
+                    </div>
+                    <div>
+                        <p class="text-white font-black text-sm">StudyBot AI</p>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+                            <p class="text-white/70 text-[11px] font-medium">Online — Ask me anything!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="clearAIChat()" title="Clear chat" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-rotate-right text-white text-xs"></i>
+                    </button>
+                    <button onclick="toggleAIChat()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-xmark text-white text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-3" style="background:#F8FAFC"></div>
+
+        <!-- Quick Prompts -->
+        <div id="ai-quick-prompts" class="px-3 pb-2 flex gap-2 overflow-x-auto" style="background:#F8FAFC;flex-shrink:0">
+            <button onclick="sendQuickPrompt('Explain this in simple words')" class="ai-quick-btn">💡 Explain it</button>
+            <button onclick="sendQuickPrompt('Give me 5 practice questions on this topic')" class="ai-quick-btn">📝 Quiz me</button>
+            <button onclick="sendQuickPrompt('Give me study tips for exams')" class="ai-quick-btn">🎯 Exam tips</button>
+            <button onclick="sendQuickPrompt('Make a short summary')" class="ai-quick-btn">📋 Summarize</button>
+        </div>
+
+        <!-- Input -->
+        <div class="flex gap-2 p-3 border-t border-[rgba(226,232,240,0.8)]" style="background:white;flex-shrink:0">
+            <input type="text" id="ai-input" placeholder="Ask StudyBot anything…" class="flex-1 rounded-xl text-sm outline-none" style="padding:10px 14px;background:white;color:#0F172A;font-weight:600;border:1.5px solid #C7D2FE;font-family:inherit" onkeydown="if(event.key==='Enter')sendAIMessage()">
+            <button onclick="sendAIMessage()" id="ai-send-btn" class="w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all active:scale-95 hover:opacity-90" style="background:linear-gradient(135deg,#4F46E5,#7C3AED);flex-shrink:0">
+                <i class="fa-solid fa-paper-plane text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============ MOBILE BOTTOM NAV ============ -->
+    <nav id="mobile-bottom-nav" class="hidden fixed bottom-0 left-0 right-0 z-[9990] md:hidden" style="background:white;border-top:1px solid rgba(226,232,240,0.8);padding-bottom:env(safe-area-inset-bottom)">
+        <div class="flex items-center justify-around py-2">
+            <button onclick="showPage('dashboard')" class="mob-nav-btn active" id="mob-btn-dashboard">
+                <i class="fa-solid fa-house text-base"></i>
+                <span>Home</span>
+            </button>
+            <button onclick="showPage('tasks')" class="mob-nav-btn" id="mob-btn-tasks">
+                <i class="fa-regular fa-square-check text-base"></i>
+                <span>Tasks</span>
+            </button>
+            <button onclick="showPage('pomodoro')" class="mob-nav-btn" id="mob-btn-pomodoro">
+                <i class="fa-regular fa-clock text-base"></i>
+                <span>Focus</span>
+            </button>
+            <button onclick="showPage('analytics')" class="mob-nav-btn" id="mob-btn-analytics">
+                <i class="fa-solid fa-chart-pie text-base"></i>
+                <span>Stats</span>
+            </button>
+            <button onclick="openSidebar()" class="mob-nav-btn" id="mob-btn-more">
+                <i class="fa-solid fa-ellipsis text-base"></i>
+                <span>More</span>
+            </button>
+        </div>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/api.js?v=8"></script>
+    <script src="js/pomodoro.js?v=8"></script>
+    <script src="js/app.js?v=8"></script>
+    <script src="js/antigravity.js?v=8"></script>
+</body>
+</html>
