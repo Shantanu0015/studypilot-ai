@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyPilot — Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --bg: #0A0C14;
+            --surface: #111827;
+            --border: rgba(255,255,255,0.07);
+            --primary: #6366F1;
+            --primary-glow: rgba(99,102,241,0.3);
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --text: #F1F5F9;
+            --muted: #64748B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ─── LOGIN ─── */
+        #login-screen {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(ellipse at 50% 20%, rgba(99,102,241,0.15) 0%, transparent 60%);
+        }
+        .login-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 24px; padding: 48px; width: 100%; max-width: 420px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+        }
+        .login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+        .login-logo .icon { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; }
+        .login-logo h1 { font-size: 20px; font-weight: 900; color: var(--text); }
+        .login-logo span { font-size: 11px; background: rgba(99,102,241,0.2); color: var(--primary); padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+        .login-card h2 { font-size: 26px; font-weight: 900; margin-bottom: 6px; }
+        .login-card p { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+        .field { margin-bottom: 16px; }
+        .field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .field input {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 16px; color: var(--text); font-size: 14px; font-weight: 500; font-family: inherit; outline: none;
+            transition: border-color 0.2s;
+        }
+        .field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+        .btn-primary {
+            width: 100%; padding: 14px; border: none; border-radius: 12px; cursor: pointer;
+            background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white;
+            font-size: 14px; font-weight: 800; letter-spacing: 0.02em; font-family: inherit;
+            transition: all 0.2s; margin-top: 8px;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 24px var(--primary-glow); }
+        #login-error { color: var(--danger); font-size: 13px; font-weight: 600; text-align: center; margin-top: 12px; display: none; }
+
+        /* ─── DASHBOARD ─── */
+        #dashboard-screen { display: none; min-height: 100vh; }
+
+        /* Topbar */
+        .topbar {
+            height: 64px; background: var(--surface); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 32px;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-logo { width: 36px; height: 36px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; }
+        .topbar h1 { font-size: 17px; font-weight: 900; }
+        .topbar .badge { background: rgba(99,102,241,0.2); color: var(--primary); font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .admin-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 24px; padding: 6px 14px; font-size: 13px; font-weight: 600; }
+        .online-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+        .btn-logout { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: var(--danger); padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+        /* Main layout */
+        .main { max-width: 1300px; margin: 0 auto; padding: 32px 32px 60px; }
+        .main-header { margin-bottom: 32px; }
+        .main-header h2 { font-size: 28px; font-weight: 900; }
+        .main-header p { color: var(--muted); font-size: 14px; font-weight: 500; margin-top: 4px; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+            padding: 20px; position: relative; overflow: hidden; transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+        .stat-card.indigo::before { background: linear-gradient(90deg, #6366F1, #8B5CF6); }
+        .stat-card.green::before  { background: linear-gradient(90deg, #10B981, #059669); }
+        .stat-card.yellow::before { background: linear-gradient(90deg, #F59E0B, #D97706); }
+        .stat-card.red::before    { background: linear-gradient(90deg, #EF4444, #DC2626); }
+        .stat-card.blue::before   { background: linear-gradient(90deg, #3B82F6, #2563EB); }
+        .stat-card.pink::before   { background: linear-gradient(90deg, #EC4899, #DB2777); }
+        .stat-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+        .stat-value { font-size: 36px; font-weight: 900; line-height: 1; }
+        .stat-sub { font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+        .stat-icon { position: absolute; top: 20px; right: 20px; font-size: 20px; opacity: 0.3; }
+
+        /* Section */
+        .section { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 24px; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .section-header h3 { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .count-badge { background: rgba(99,102,241,0.15); color: var(--primary); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        tbody td { padding: 13px 14px; font-size: 13px; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .avatar { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, #6366F1, #8B5CF6); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: white; vertical-align: middle; margin-right: 8px; }
+        .user-name { font-weight: 700; font-size: 13px; }
+        .user-email { color: var(--muted); font-size: 11px; font-weight: 500; }
+
+        .pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .pill-green  { background: rgba(16,185,129,0.15); color: #10B981; }
+        .pill-yellow { background: rgba(245,158,11,0.15); color: #F59E0B; }
+        .pill-red    { background: rgba(239,68,68,0.15);  color: #EF4444; }
+
+        .btn-delete {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+            color: var(--danger); padding: 5px 12px; border-radius: 8px;
+            font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s;
+        }
+        .btn-delete:hover { background: rgba(239,68,68,0.25); }
+
+        /* Activity */
+        .activity-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+        .activity-text { flex: 1; font-size: 13px; font-weight: 500; }
+        .activity-text strong { color: var(--text); }
+        .activity-text span { color: var(--muted); }
+        .activity-time { font-size: 11px; font-weight: 600; color: var(--muted); }
+
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: var(--muted); }
+        .loading i { font-size: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Empty */
+        .empty { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+
+        /* Refresh button */
+        .btn-refresh { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-refresh:hover { background: rgba(255,255,255,0.1); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main { padding: 20px 16px; }
+            .topbar { padding: 0 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="login-screen">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="icon"><i class="fa-solid fa-brain" style="color:white;font-size:18px"></i></div>
+            <h1>StudyPilot</h1>
+            <span>ADMIN</span>
+        </div>
+        <h2>Admin Access</h2>
+        <p>Sign in with your administrator credentials to continue.</p>
+        <form id="login-form">
+            <div class="field">
+                <label>Email Address</label>
+                <input type="email" id="admin-email" placeholder="admin@studypilot.com" required autocomplete="username">
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" id="admin-password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fa-solid fa-shield-halved" style="margin-right:8px"></i>Sign In as Admin
+            </button>
+        </form>
+        <p id="login-error"></p>
+    </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dashboard-screen">
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="topbar-logo"><i class="fa-solid fa-brain" style="color:white;font-size:16px"></i></div>
+            <h1>StudyPilot</h1>
+            <span class="badge">Admin Panel</span>
+        </div>
+        <div class="topbar-right">
+            <div class="admin-pill">
+                <div class="online-dot"></div>
+                <span id="admin-email-display">Admin</span>
+            </div>
+            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket" style="margin-right:6px"></i>Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="main-header">
+            <h2>📊 Platform Overview</h2>
+            <p id="last-updated">Loading data…</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="loading"><i class="fa-solid fa-spinner"></i></div>
+        </div>
+
+        <!-- Users Table + Activity Side by side -->
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start" id="main-grid">
+            <!-- Users Table -->
+            <div class="section">
+                <div class="section-header">
+                    <h3><i class="fa-solid fa-users" style="color:#6366F1"></i> Registered Users <span class="count-badge" id="user-count">0</span></h3>
+                    <button class="btn-refresh" onclick="loadDashboard()"><i class="fa-solid fa-rotate-right" style="margin-right:6px"></i>Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Tasks</th>
+                                <th>Study Hrs</th>
+                                <th>Exams</th>
+                                <th>Notes</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr><td colspan="6" class="loading"><i class="fa-solid fa-spinner"></i></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="section">
+                <div class="section-header">
+                    <h3><i class="fa-solid fa-bolt" style="color:#F59E0B"></i> Recent Sessions</h3>
+                </div>
+                <div id="activity-feed">
+                    <div class="loading"><i class="fa-solid fa-spinner"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:5000/api';
+let _token = localStorage.getItem('admin_token') || '';
+
+// Auto-login if token exists
+window.addEventListener('DOMContentLoaded', () => {
+    if (_token) showDashboard();
+});
+
+// ─── LOGIN ───
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email    = document.getElementById('admin-email').value;
+    const password = document.getElementById('admin-password').value;
+    const errEl    = document.getElementById('login-error');
+    errEl.style.display = 'none';
+
+    try {
+        const res  = await fetch(`${API}/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        _token = data.token;
+        localStorage.setItem('admin_token', _token);
+        document.getElementById('admin-email-display').innerText = email;
+        showDashboard();
+    } catch(err) {
+        errEl.style.display = 'block';
+        errEl.innerText = '❌ ' + err.message;
+    }
+});
+
+function showDashboard() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard-screen').style.display = 'block';
+    loadDashboard();
+}
+
+function logout() {
+    localStorage.removeItem('admin_token');
+    _token = '';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('dashboard-screen').style.display = 'none';
+}
+
+async function adminFetch(endpoint) {
+    const res = await fetch(`${API}/admin${endpoint}`, {
+        headers: { 'Authorization': `Bearer ${_token}` }
+    });
+    if (res.status === 401 || res.status === 403) { logout(); throw new Error('Session expired'); }
+    return res.json();
+}
+
+// ─── LOAD DASHBOARD ───
+async function loadDashboard() {
+    document.getElementById('last-updated').innerText = 'Updating…';
+    await Promise.all([loadStats(), loadUsers(), loadActivity()]);
+    document.getElementById('last-updated').innerText =
+        'Last updated: ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ─── STATS ───
+async function loadStats() {
+    const grid = document.getElementById('stats-grid');
+    try {
+        const s = await adminFetch('/stats');
+        const taskRate = s.total_tasks > 0 ? Math.round(s.completed_tasks/s.total_tasks*100) : 0;
+        grid.innerHTML = `
+            ${statCard('indigo', 'users', 'fa-users', 'Total Users', s.total_users, 'registered accounts')}
+            ${statCard('green', 'study', 'fa-clock', 'Study Hours', s.total_study_hours + 'h', `${s.total_sessions} sessions logged`)}
+            ${statCard('yellow', 'tasks', 'fa-check-square', 'Total Tasks', s.total_tasks, `${s.completed_tasks} completed (${taskRate}%)`)}
+            ${statCard('blue', 'exams', 'fa-graduation-cap', 'Exams Tracked', s.total_exams, 'across all users')}
+            ${statCard('pink', 'notes', 'fa-note-sticky', 'Subject Notes', s.total_notes, 'notes created')}
+            ${statCard('red', 'top', 'fa-trophy', 'Top Student', s.top_user, 'most tasks created')}
+        `;
+    } catch(err) {
+        grid.innerHTML = `<div class="empty">Failed to load stats</div>`;
+    }
+}
+
+function statCard(color, id, icon, label, value, sub) {
+    return `<div class="stat-card ${color}">
+        <i class="fa-solid ${icon} stat-icon"></i>
+        <div class="stat-label">${label}</div>
+        <div class="stat-value">${value}</div>
+        <div class="stat-sub">${sub}</div>
+    </div>`;
+}
+
+// ─── USERS TABLE ───
+async function loadUsers() {
+    const tbody = document.getElementById('users-tbody');
+    try {
+        const users = await adminFetch('/users');
+        document.getElementById('user-count').innerText = users.length;
+
+        if (users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="empty">No users registered yet</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = users.map(u => {
+            const initial = (u.name || '?').charAt(0).toUpperCase();
+            const rate    = u.tasks > 0 ? Math.round(u.tasks_done/u.tasks*100) : 0;
+            const ratePill = rate >= 70 ? 'pill-green' : rate >= 40 ? 'pill-yellow' : 'pill-red';
+            return `<tr>
+                <td>
+                    <span class="avatar">${initial}</span>
+                    <span class="user-name">${u.name}</span><br>
+                    <small class="user-email" style="margin-left:40px">${u.email}</small>
+                </td>
+                <td><b>${u.tasks}</b> <span class="pill ${ratePill}">${rate}%</span></td>
+                <td><b>${u.study_hours}h</b></td>
+                <td><b>${u.exams}</b></td>
+                <td><b>${u.notes}</b></td>
+                <td><button class="btn-delete" onclick="deleteUser(${u.id}, '${u.name}')">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button></td>
+            </tr>`;
+        }).join('');
+    } catch(err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty">Failed to load users</td></tr>`;
+    }
+}
+
+async function deleteUser(id, name) {
+    if (!confirm(`⚠️ Delete user "${name}" and ALL their data? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`${API}/admin/users/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${_token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert(`✅ ${data.message}`);
+        loadDashboard();
+    } catch(err) {
+        alert('❌ ' + err.message);
+    }
+}
+
+// ─── ACTIVITY FEED ───
+async function loadActivity() {
+    const feed = document.getElementById('activity-feed');
+    try {
+        const items = await adminFetch('/activity');
+        if (items.length === 0) {
+            feed.innerHTML = `<div class="empty">No sessions logged yet</div>`;
+            return;
+        }
+        feed.innerHTML = items.map(item => `
+            <div class="activity-item">
+                <div class="activity-dot"></div>
+                <div class="activity-text">
+                    <strong>${item.user}</strong>
+                    <span> studied <strong>${item.subject}</strong> for <strong>${item.minutes}m</strong></span>
+                </div>
+                <div class="activity-time">${item.date}</div>
+            </div>`).join('');
+    } catch(err) {
+        feed.innerHTML = `<div class="empty">Failed to load activity</div>`;
+    }
+}
+
+// Auto-refresh every 60 seconds
+setInterval(() => { if (_token) loadDashboard(); }, 60000);
+
+// Responsive grid
+function checkGrid() {
+    const grid = document.getElementById('main-grid');
+    if (grid) grid.style.gridTemplateColumns = window.innerWidth < 900 ? '1fr' : '1fr 360px';
+}
+window.addEventListener('resize', checkGrid);
+checkGrid();
+</script>
+</body>
+</html>

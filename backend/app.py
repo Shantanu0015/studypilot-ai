@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
-load_dotenv()
+# Always load .env from the same folder as app.py
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
 from flask import Flask
 from extensions import db
 from flask_cors import CORS
@@ -16,6 +17,7 @@ from routes.exams_routes import exams_bp
 from routes.revision_routes import revision_bp
 from routes.notes_routes import notes_bp
 from routes.ai_routes import ai_bp
+from routes.admin_routes import admin_bp
 
 def create_app():
     app = Flask(__name__)
@@ -24,7 +26,7 @@ def create_app():
     base_dir = os.path.abspath(os.path.dirname(__name__))
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, 'database.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = 'super-secret-key-study-planner'
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'studypilot_super_secret_key_2024')
 
     db.init_app(app)
 
@@ -38,6 +40,7 @@ def create_app():
     app.register_blueprint(revision_bp,  url_prefix='/api/revision')
     app.register_blueprint(notes_bp,     url_prefix='/api/notes')
     app.register_blueprint(ai_bp,        url_prefix='/api/ai')
+    app.register_blueprint(admin_bp,     url_prefix='/api/admin')
 
     with app.app_context():
         db.create_all()           # creates new tables

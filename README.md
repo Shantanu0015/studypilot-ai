@@ -1,4 +1,4 @@
-# 📚 AI Study Planner
+# 📚 StudyPilot AI
 
 > A full-stack, production-grade AI-powered study productivity application built with **Flask + SQLite** (backend) and **Vanilla JS** (frontend). Designed to help students plan, focus, track, and learn — all in one place.
 
@@ -24,6 +24,7 @@
 | 👤 **Profile / Settings** | Update name, email, and password |
 | 🎉 **Onboarding Guide** | Welcome walkthrough for new users |
 | 📱 **Mobile Friendly** | Responsive design with bottom nav, slide-in sidebar, full-screen AI chat |
+| 🛡️ **Admin Dashboard** | Separate admin panel to monitor users, activity, and platform stats |
 
 ---
 
@@ -47,8 +48,8 @@ This will automatically:
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/yourusername/ai-study-planner.git
-cd ai-study-planner
+git clone https://github.com/Shantanu0015/studypilot-ai.git
+cd studypilot-ai
 ```
 
 **2. Set up backend**
@@ -60,11 +61,14 @@ venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 ```
 
-**3. Add your Groq API key**
+**3. Configure environment**
 
 Edit `backend/.env`:
 ```
 GROQ_API_KEY=your_groq_key_here
+ADMIN_EMAIL=your_email@gmail.com
+ADMIN_PASSWORD="your_password"
+SECRET_KEY=your_secret_key
 ```
 
 **4. Start backend**
@@ -85,15 +89,16 @@ python -m http.server 8000
 ## 🗂 Project Structure
 
 ```
-ai-study-planner/
+studypilot-ai/
 ├── backend/
 │   ├── app.py                  # Flask app factory + DB migration
 │   ├── models.py               # SQLAlchemy models (User, Task, Exam, etc.)
 │   ├── extensions.py           # DB instance
 │   ├── requirements.txt
-│   ├── .env                    # API keys (not committed to git)
+│   ├── .env                    # API keys & admin credentials (not committed)
 │   └── routes/
 │       ├── auth_routes.py      # Register, Login, Profile
+│       ├── admin_routes.py     # Admin login, stats, user management
 │       ├── ai_routes.py        # StudyBot AI Chat (Groq)
 │       ├── planner_routes.py   # AI Schedule generation
 │       ├── tasks_routes.py     # Task CRUD with deadline/priority
@@ -105,12 +110,13 @@ ai-study-planner/
 │       └── notes_routes.py     # Subject notes
 │
 ├── frontend/
-│   ├── index.html              # Single-page app (mobile-friendly)
+│   ├── index.html              # Main student app (mobile-friendly)
+│   ├── admin.html              # Admin dashboard (separate page)
 │   ├── css/
 │   │   └── style.css           # Full design system + mobile CSS
 │   └── js/
 │       ├── api.js              # API helper + JWT token management
-│       ├── app.js              # All page logic + AI chat
+│       ├── app.js              # All page logic + AI chat + mobile nav
 │       ├── pomodoro.js         # Pomodoro timer logic
 │       └── antigravity.js      # Premium animations
 │
@@ -136,12 +142,13 @@ ai-study-planner/
 
 ## 📖 API Reference
 
+### Student API
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/auth/register` | Register new user |
 | POST | `/api/auth/login` | Login, get JWT token |
 | GET/PUT | `/api/auth/profile` | View/update profile + password |
-| **POST** | **`/api/ai/chat`** | **StudyBot AI chat** |
+| POST | `/api/ai/chat` | StudyBot AI chat |
 | POST | `/api/planner/generate-plan` | Generate AI schedule |
 | GET/POST | `/api/tasks/` | List/create tasks |
 | PUT/DELETE | `/api/tasks/<id>` | Update/delete task |
@@ -154,41 +161,63 @@ ai-study-planner/
 | GET/POST/PUT/DELETE | `/api/revision/` | Revision topics |
 | GET/POST/DELETE | `/api/notes/` | Subject notes |
 
+### Admin API
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/admin/login` | Admin login (separate credentials) |
+| GET | `/api/admin/stats` | Platform-wide statistics |
+| GET | `/api/admin/users` | List all users with activity data |
+| DELETE | `/api/admin/users/<id>` | Delete user and all their data |
+| GET | `/api/admin/activity` | Recent study sessions across all users |
+
+---
+
+## 🛡️ Admin Dashboard
+
+Access the admin panel at `http://127.0.0.1:8000/admin.html`
+
+Or click the **"Admin Dashboard"** link at the bottom of the main login page.
+
+Features:
+- 📊 Platform stats — total users, study hours, tasks, exams, notes
+- 👥 User management table with completion rates
+- 🗑️ Delete users and all their data
+- ⚡ Real-time activity feed (last 20 sessions)
+- 🔄 Auto-refresh every 60 seconds
+
 ---
 
 ## 🤖 StudyBot AI — What it can do
 
-Students can ask StudyBot anything in the chat:
-
+Students can ask StudyBot anything:
 - *"Explain Newton's 3rd law in simple words"*
 - *"Give me 5 practice questions on Quadratic Equations"*
 - *"Create a 3-day study plan for my Physics exam"*
 - *"Summarize the water cycle in 5 bullet points"*
 - *"Give me tips to study better at night"*
-- *"What is the difference between mitosis and meiosis?"*
 
-The AI remembers the last 10 messages for context — making it feel like a real conversation.
+The AI keeps the last 10 messages for context — making it feel like a real conversation.
 
 ---
 
 ## 📱 Mobile Support
 
-The app is fully mobile-friendly:
 - **Top bar** with hamburger menu and AI chat button
-- **Bottom navigation** for quick access to main pages
+- **Bottom navigation** for quick access (Home, Tasks, Focus, Stats, More)
 - **Slide-in sidebar** with all pages accessible
-- **Full-screen AI chat** panel on mobile
+- **Full-screen AI chat** on mobile
 - **Responsive grids** — all layouts work on small screens
 
 ---
 
 ## 🔒 Security Notes
 
-> This app uses a hardcoded `SECRET_KEY` for development. For production deployment:
-> - Move `SECRET_KEY` to environment variables
-> - Keep `.env` out of version control (already in `.gitignore`)
+> For production deployment:
+> - Set all values in `.env` (already excluded from git via `.gitignore`)
+> - Use a strong `SECRET_KEY`
 > - Use HTTPS
-> - Replace SQLite with PostgreSQL for multi-user production
+> - Replace SQLite with PostgreSQL for high traffic
+> - Change default admin credentials before deploying
 
 ---
 
@@ -198,4 +227,4 @@ MIT License — feel free to use, modify, and distribute.
 
 ---
 
-Made with ❤️ by Shant
+Made with ❤️ by Shantanu
