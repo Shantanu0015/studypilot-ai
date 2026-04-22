@@ -1,5 +1,7 @@
 # 📚 StudyPilot AI
 
+**🔴 LIVE DEMO:** [https://studypilot-ai-app.netlify.app](https://studypilot-ai-app.netlify.app)
+
 > A full-stack, production-grade AI-powered study productivity application built with **Flask + SQLite** (backend) and **Vanilla JS** (frontend). Designed to help students plan, focus, track, and learn — all in one place.
 
 ![License](https://img.shields.io/badge/license-MIT-blue) ![Python](https://img.shields.io/badge/python-3.8+-green) ![Flask](https://img.shields.io/badge/flask-3.x-orange) ![AI](https://img.shields.io/badge/AI-Groq%20Llama%203.3-purple) ![Mobile](https://img.shields.io/badge/mobile-friendly-brightgreen)
