@@ -1,4 +1,5 @@
-const API_URL = 'http://127.0.0.1:5000/api';
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = isLocal ? 'http://127.0.0.1:5000/api' : 'https://studypilot-ai-backend.onrender.com/api';
 
 const api = {
     getToken: () => localStorage.getItem('token'),
