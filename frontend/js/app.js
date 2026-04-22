@@ -1012,7 +1012,10 @@ const _origShowPageForAI = window.showPage;
 window.showPage = function(pageId) {
     _origShowPageForAI(pageId);
     const btn = document.getElementById('ai-chat-btn');
-    if (btn && api.getToken()) btn.classList.remove('hidden');
+    if (btn && api.getToken()) {
+        btn.classList.remove('hidden');
+        btn.style.display = 'flex';
+    }
 
     // Show mobile bottom nav and topbar when logged in
     const mobileNav = document.getElementById('mobile-bottom-nav');
@@ -1058,7 +1061,27 @@ window.toggleAIChat = function() {
     if (_aiOpen) {
         panel.classList.remove('hidden');
         panel.style.display = 'flex';
-        if (icon) { icon.className = 'fa-solid fa-xmark text-white text-xl'; }
+
+        // Desktop: popup in bottom-right — Mobile: full screen
+        if (window.innerWidth >= 768) {
+            panel.style.bottom       = '88px';
+            panel.style.right        = '24px';
+            panel.style.left         = 'auto';
+            panel.style.top          = 'auto';
+            panel.style.width        = '360px';
+            panel.style.height       = '520px';
+            panel.style.borderRadius = '20px';
+        } else {
+            panel.style.top    = '0';
+            panel.style.bottom = '0';
+            panel.style.left   = '0';
+            panel.style.right  = '0';
+            panel.style.width  = '100%';
+            panel.style.height = '100%';
+            panel.style.borderRadius = '0';
+        }
+
+        if (icon)  { icon.className = 'fa-solid fa-xmark text-white text-xl'; }
         if (unread) unread.classList.add('hidden');
         if (!_aiGreeted) {
             _aiGreeted = true;
