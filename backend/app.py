@@ -23,7 +23,7 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
-    base_dir = os.path.abspath(os.path.dirname(__name__))
+    base_dir = os.path.abspath(os.path.dirname(__file__))
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, 'database.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'studypilot_super_secret_key_2024')

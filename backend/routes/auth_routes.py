@@ -13,8 +13,8 @@ SECRET_KEY = 'super-secret-key-study-planner'
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.json
-    name = data.get('name')
-    email = data.get('email')
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip().lower()
     password = data.get('password')
     if not name or not email or not password:
         return jsonify({"error": "Missing data"}), 400
@@ -28,7 +28,8 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
-    user = User.query.filter_by(email=data.get('email')).first()
+    email = data.get('email', '').strip().lower()
+    user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, data.get('password', '')):
         return jsonify({"error": "Invalid credentials"}), 401
     token = jwt.encode({
